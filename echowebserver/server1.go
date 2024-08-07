@@ -10,6 +10,7 @@ import (
 	"math"
 	"math/rand"
 	"net/http"
+	"os"
 	"strconv"
 	"sync"
 )
@@ -25,6 +26,17 @@ const (
 )
 
 func main() {
+	// set up pointer to database (tentatively postgres)
+	// this file won't be committed for safety
+	var jsonFile, err = os.Open("secret.json")
+	// if we os.Open returns an error then handle it
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println("Successfully Opened users.json")
+	// defer the closing of our jsonFile so that we can parse it later on
+	defer jsonFile.Close()
+
 	http.HandleFunc("/", handler)
 	http.HandleFunc("/counter", counter)
 	http.HandleFunc("/lissajous", func(w http.ResponseWriter, r *http.Request) { lissajous(w, r) })
@@ -32,6 +44,7 @@ func main() {
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
+	fmt.Printf("%s", data.host)
 	mu.Lock()
 	count++
 	mu.Unlock()
