@@ -44,7 +44,6 @@ func main() {
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	fmt.Printf("%s", data.host)
 	mu.Lock()
 	count++
 	mu.Unlock()
