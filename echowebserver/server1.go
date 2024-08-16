@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"image"
 	"image/color"
@@ -38,6 +39,7 @@ func main() {
 	defer jsonFile.Close()
 
 	http.HandleFunc("/", handler)
+	http.HandleFunc("/api", apiHandler)
 	http.HandleFunc("/counter", counter)
 	http.HandleFunc("/lissajous", func(w http.ResponseWriter, r *http.Request) { lissajous(w, r) })
 	log.Fatal(http.ListenAndServe("localhost:8000", nil))
@@ -48,6 +50,48 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	count++
 	mu.Unlock()
 	fmt.Fprintf(w, "URL.Path = %q\n", r.URL.Path)
+}
+
+func apiHandler(w http.ResponseWriter, r *http.Request) {
+	connStr := "host=localhost user=raspberry dbname=squirrels password=postgrespassword sslmode=disable"
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		log.Fatalf("Error opening database connection: %v", err)
+	}
+	defer db.Close()
+
+	// Test the connection
+	err = db.Ping()
+	if err != nil {
+		log.Fatalf("Error pinging database: %v", err)
+	}
+
+	// Perform a query
+	rows, err := db.Query(`
+			SELECT squirrel_id, primary_fur_color, location, activities
+			FROM squirrel_data
+			LIMIT 1
+	`)
+	if err != nil {
+		log.Fatalf("Error querying database: %v", err)
+	}
+	defer rows.Close()
+
+	// Process the results
+	for rows.Next() {
+		var id, color, location, activities string
+		err := rows.Scan(&id, &color, &location, &activities)
+		if err != nil {
+			log.Fatalf("Error scanning row: %v", err)
+		}
+		fmt.Fprintf(w, "ID: %s, Color: %s, Location: %s, Activities: %s\n", id, color, location, activities)
+	}
+
+	if err = rows.Err(); err != nil {
+		log.Fatalf("Error after scanning rows: %v", err)
+	}
+
+	//fmt.Println("Query executed successfully")
 }
 
 func counter(w http.ResponseWriter, r *http.Request) {
