@@ -53,7 +53,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func apiHandler(w http.ResponseWriter, r *http.Request) {
-	connStr := "host=localhost user=raspberry dbname=squirrels password=postgrespassword sslmode=disable"
+	connStr := "host=localhost user=myuser dbname=mydb password=mypassword sslmode=disable"
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatalf("Error opening database connection: %v", err)
