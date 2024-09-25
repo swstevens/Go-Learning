@@ -22,13 +22,33 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Home Page")
 }
 
-func webSocket(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "WebSocket Endpoint")
-	// Upgrade the HTTP connection to a WebSocket connection
+func reader(conn *websocket.Conn) {
+	for {
+		messageType, p, err := conn.ReadMessage()
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		log.Println(string(p))
 
-	// Handle WebSocket communication
-	// Send and receive messages
-	// Handle disconnections
+		if err := conn.WriteMessage(messageType, p); err != nil {
+			log.Println(err)
+			return
+		}
+	}
+}
+
+func webSocket(w http.ResponseWriter, r *http.Request) {
+	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
+
+	ws, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println(err)
+	}
+	defer ws.Close()
+	log.Println("Client Successfully Connected")
+
+	reader(ws)
 }
 
 func main() {
