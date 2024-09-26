@@ -4,7 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>React WebSocket App</title>
+    <title>React WebSocket App - Checkbox Grid</title>
+    <style>
+        /* Simple styling for the 3x3 grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .grid label {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+    </style>
 </head>
 <body>
     <div id="root"></div>
@@ -16,10 +33,10 @@
     <!-- Load Babel to handle JSX in the browser -->
     <script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
 
-    <!-- React Component with WebSocket -->
+    <!-- React Component with WebSocket and 3x3 Grid of Checkboxes -->
     <script type="text/babel">
         function App() {
-            const [inputValue, setInputValue] = React.useState('');
+            const [checkboxes, setCheckboxes] = React.useState(Array(9).fill(false)); // 9 checkboxes for a 3x3 grid
             const [messages, setMessages] = React.useState([]);
 
             // Initialize WebSocket connection
@@ -41,27 +58,44 @@
                 };
             }, []);
 
-            // Handle form submission to send message
+            // Handle checkbox change
+            const handleCheckboxChange = (index) => {
+                const updatedCheckboxes = [...checkboxes];
+                updatedCheckboxes[index] = !updatedCheckboxes[index]; // Toggle the checkbox state
+                setCheckboxes(updatedCheckboxes);
+            };
+
+            // Convert checkboxes to array of 1s and 0s
+            const getCheckboxValues = () => {
+                return checkboxes.map(checked => (checked ? 1 : 0));
+            };
+
+            // Handle form submission to send the checkbox values
             const handleSubmit = (e) => {
                 e.preventDefault();
+                const checkboxArray = getCheckboxValues();
                 if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-                    ws.current.send(inputValue);
-                    setInputValue('');
+                    ws.current.send(JSON.stringify(checkboxArray)); // Send as a JSON array
                 }
             };
 
             return (
                 <div>
-                    <h1>WebSocket Chat</h1>
+                    <h1>3x3 Checkbox Grid</h1>
 
                     <form onSubmit={handleSubmit}>
-                        <input
-                            type="text"
-                            value={inputValue}
-                            onChange={(e) => setInputValue(e.target.value)}
-                            placeholder="Type a message"
-                        />
-                        <button type="submit">Send</button>
+                        <div className="grid">
+                            {checkboxes.map((checked, index) => (
+                                <label key={index}>
+                                    <input
+                                        type="checkbox"
+                                        checked={checked}
+                                        onChange={() => handleCheckboxChange(index)}
+                                    />
+                                </label>
+                            ))}
+                        </div>
+                        <button type="submit">Submit</button>
                     </form>
 
                     <div>
