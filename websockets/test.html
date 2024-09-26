@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>React WebSocket App - Checkbox Grid</title>
+    <title>React WebSocket App - Value Grid</title>
     <style>
         /* Simple styling for the 3x3 grid */
         .grid {
@@ -13,13 +13,15 @@
             gap: 10px;
             margin-bottom: 20px;
         }
-        .grid label {
+        .grid button {
             display: flex;
             justify-content: center;
             align-items: center;
             background-color: #f0f0f0;
             border: 1px solid #ccc;
             padding: 10px;
+            font-size: 20px;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -33,10 +35,10 @@
     <!-- Load Babel to handle JSX in the browser -->
     <script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
 
-    <!-- React Component with WebSocket and 3x3 Grid of Checkboxes -->
+    <!-- React Component with WebSocket and 3x3 Grid of Values (0, 1, 2) -->
     <script type="text/babel">
         function App() {
-            const [checkboxes, setCheckboxes] = React.useState(Array(9).fill(false)); // 9 checkboxes for a 3x3 grid
+            const [gridValues, setGridValues] = React.useState(Array(9).fill(0)); // 9 elements for a 3x3 grid, each initialized to 0
             const [messages, setMessages] = React.useState([]);
 
             // Initialize WebSocket connection
@@ -58,41 +60,32 @@
                 };
             }, []);
 
-            // Handle checkbox change
-            const handleCheckboxChange = (index) => {
-                const updatedCheckboxes = [...checkboxes];
-                updatedCheckboxes[index] = !updatedCheckboxes[index]; // Toggle the checkbox state
-                setCheckboxes(updatedCheckboxes);
+            // Handle value change for each grid cell
+            const handleValueChange = (index) => {
+                const updatedValues = [...gridValues];
+                // Cycle through the values 0 -> 1 -> 2 -> 0
+                updatedValues[index] = (updatedValues[index] + 1) % 3;
+                setGridValues(updatedValues);
             };
 
-            // Convert checkboxes to array of 1s and 0s
-            const getCheckboxValues = () => {
-                return checkboxes.map(checked => (checked ? 1 : 0));
-            };
-
-            // Handle form submission to send the checkbox values
+            // Handle form submission to send the grid values
             const handleSubmit = (e) => {
                 e.preventDefault();
-                const checkboxArray = getCheckboxValues();
                 if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-                    ws.current.send(JSON.stringify(checkboxArray)); // Send as a JSON array
+                    ws.current.send(JSON.stringify(gridValues)); // Send as a JSON array
                 }
             };
 
             return (
                 <div>
-                    <h1>3x3 Checkbox Grid</h1>
+                    <h1>3x3 Value Grid (0, 1, 2)</h1>
 
                     <form onSubmit={handleSubmit}>
                         <div className="grid">
-                            {checkboxes.map((checked, index) => (
-                                <label key={index}>
-                                    <input
-                                        type="checkbox"
-                                        checked={checked}
-                                        onChange={() => handleCheckboxChange(index)}
-                                    />
-                                </label>
+                            {gridValues.map((value, index) => (
+                                <button type="button" key={index} onClick={() => handleValueChange(index)}>
+                                    {value}
+                                </button>
                             ))}
                         </div>
                         <button type="submit">Submit</button>

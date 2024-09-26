@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 
 	"github.com/gorilla/websocket"
@@ -30,8 +31,18 @@ func reader(conn *websocket.Conn) {
 			return
 		}
 		log.Println(string(p))
+		runes := []rune(string(p))
+		zeroIndices := []int{}
+		for i, r := range runes {
+			if r == '0' {
+				zeroIndices = append(zeroIndices, i)
+			}
+		}
 
-		if err := conn.WriteMessage(messageType, p); err != nil {
+		randomIndex := zeroIndices[rand.Intn(len(zeroIndices))]
+		runes[randomIndex] = '2'
+
+		if err := conn.WriteMessage(messageType, []byte(string(runes))); err != nil {
 			log.Println(err)
 			return
 		}
