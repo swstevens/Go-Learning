@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>React WebSocket App</title>
+</head>
+<body>
+    <div id="root"></div>
+
+    <!-- Load React and ReactDOM -->
+    <script src="https://unpkg.com/react@17/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js" crossorigin></script>
+
+    <!-- Load Babel to handle JSX in the browser -->
+    <script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
+
+    <!-- React Component with WebSocket -->
+    <script type="text/babel">
+        function App() {
+            const [inputValue, setInputValue] = React.useState('');
+            const [messages, setMessages] = React.useState([]);
+
+            // Initialize WebSocket connection
+            const ws = React.useRef(null);
+
+            React.useEffect(() => {
+                ws.current = new WebSocket('http://localhost:8080/ws'); // Change this to your WebSocket server
+
+                // Event listener for receiving messages
+                ws.current.onmessage = (event) => {
+                    setMessages(prevMessages => [...prevMessages, event.data]);
+                };
+
+                // Cleanup WebSocket on unmount
+                return () => {
+                    if (ws.current) {
+                        ws.current.close();
+                    }
+                };
+            }, []);
+
+            // Handle form submission to send message
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+                    ws.current.send(inputValue);
+                    setInputValue('');
+                }
+            };
+
+            return (
+                <div>
+                    <h1>WebSocket Chat</h1>
+
+                    <form onSubmit={handleSubmit}>
+                        <input
+                            type="text"
+                            value={inputValue}
+                            onChange={(e) => setInputValue(e.target.value)}
+                            placeholder="Type a message"
+                        />
+                        <button type="submit">Send</button>
+                    </form>
+
+                    <div>
+                        <h2>Messages</h2>
+                        <ul>
+                            {messages.map((message, index) => (
+                                <li key={index}>{message}</li>
+                            ))}
+                        </ul>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
