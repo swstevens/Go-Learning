@@ -49,6 +49,8 @@
 
                 // Event listener for receiving messages
                 ws.current.onmessage = (event) => {
+                    // put the 9 values into the gridValues array here based on message updates
+                    setGridValues(JSON.parse(event.data)); // Assuming the server sends a JSON array
                     setMessages(prevMessages => [...prevMessages, event.data]);
                 };
 
