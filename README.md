@@ -1,6 +1,6 @@
 just a place for me to house some small files while I learn Golang
 
-Currently I'm working on building a web server using Golang. It runs on a Raspberry Pi and can be accessed at https://swstevens.duckdns.com. my current goal is to set up websockets for online web game multiplayer.
+Currently I'm working on building a web server using Golang. It runs on a Raspberry Pi and can be accessed at https://swstevens.duckdns.com. My current goal is to set up websockets for online web game multiplayer.
 
 API's include:
 ```
